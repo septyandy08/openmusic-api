@@ -1,6 +1,5 @@
 {
     "env": {
-        "browser": true,
         "commonjs": true,
         "es2021": true,
         "node": true
@@ -12,6 +11,14 @@
         "ecmaVersion": 12
     },
     "rules": {
-        "no-console": "off"
+        "no-console": "off",
+        "linebreak-style": "off",
+        "no-underscore-dangle": "off",
+        "camelcase": "off",
+        "indent":"off",
+        "object-curly-newline": "off",
+        "no-trailing-spaces": "off",
+        "padded-blocks": "off",
+        "newline-per-chained-call": "off"
     }
 }
