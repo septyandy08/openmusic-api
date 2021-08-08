@@ -10,17 +10,20 @@ class PlaylistsService {
         this._pool = new Pool();
     }
 
-    async addPlaylist({ name, owner }) {
+    async addPlaylist({ 
+        name, owner,
+    }) {
         const id = `playlist-${nanoid(16)}`;
-        const createdAt = new Date().toISOString();
-        const updatedAt = createdAt;
+        const insertedAt = new Date().toISOString();
+        const updatedAt = insertedAt;
 
         const query = {
             text: 'INSERT INTO playlists VALUES($1, $2, $3, $4, $5) RETURNING id',
-            values: [id, name, createdAt, updatedAt, owner],
+            values: [id, name, insertedAt, updatedAt, owner],
         };
 
         const result = await this._pool.query(query);
+
         if (!result.rows[0].id) {
             throw new InvariantError('Playlist gagal ditambahkan');
         }
@@ -52,6 +55,7 @@ class PlaylistsService {
         };
 
         const result = await this._pool.query(query);
+        
         return result.rows.map(mapDBToModel);
     }
 

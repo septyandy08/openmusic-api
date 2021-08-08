@@ -61,7 +61,6 @@ class PlaylistSongsHandler {
 
             await this._service.verifyPlaylistSongAccess(playlistId, credentialId);
             const songs = await this._service.getPlaylistSong(playlistId);
-
             return {
                 status: 'success',
                 data: {
@@ -92,7 +91,6 @@ class PlaylistSongsHandler {
     async deletePlaylistSongsHandler(request, h) {
         try {
             const { playlistId } = request.params;
-
             const { songId = 'untitled' } = request.payload;
             const { id: credentialId } = request.auth.credentials;
 

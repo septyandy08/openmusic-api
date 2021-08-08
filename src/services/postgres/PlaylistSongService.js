@@ -12,27 +12,30 @@ class PlaylistSongService {
         this._collaborationService = collaborationService;
     }
     
-    async addSongPlaylist({ playlistId, songId }) {
-    const id = `${nanoid(16)}`;
-    const createdAt = new Date().toISOString();
-    const updatedAt = createdAt;
+    async addSongPlaylist({ 
+        playlistId, songId, 
+    }) {
+        const id = `${nanoid(16)}`;
+        const insertedAt = new Date().toISOString();
+        const updatedAt = insertedAt;
 
-    const query = {
-        text: 'INSERT INTO playlistsongs VALUES($1, $2, $3, $4, $5) RETURNING id',
-        values: [id, playlistId, songId, createdAt, updatedAt],
-    };
+        const query = {
+            text: 'INSERT INTO playlistsongs VALUES($1, $2, $3, $4, $5) RETURNING id',
+            values: [id, playlistId, songId, insertedAt, updatedAt],
+        };
 
-    const result = await this._pool.query(query);
-    if (!result.rows[0].id) {
-        throw new InvariantError('Lagu gagal ditambahkan');
-    }
-    return result.rows[0].id;
+        const result = await this._pool.query(query);
+
+        if (!result.rows[0].id) {
+            throw new InvariantError('Lagu gagal ditambahkan');
+        }
+        return result.rows[0].id;
     }
 
     async verifyNewSongPlaylists(song_id, playlist_id) {
         const query = {
-            text: 'SELECT song_id FROM playlistsongs WHERE song_id = $1 and playlist_id = $2',
-            values: [song_id, playlist_id],
+                text: 'SELECT song_id FROM playlistsongs WHERE song_id = $1 and playlist_id = $2',
+                values: [song_id, playlist_id],
         };
 
         const result = await this._pool.query(query);
