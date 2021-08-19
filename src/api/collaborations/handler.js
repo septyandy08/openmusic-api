@@ -1,24 +1,27 @@
-const ClientError = require('../../exceptions/ClientError');
+const ClientErrorApp = require('../../exceptions/ClientErrorApp');
 
-class CollaborationsHandler {
-    constructor(collaborationsService, playlistSongService, validator) {
-        this._collaborationsService = collaborationsService;
-        this._playlistSongService = playlistSongService;
+class CollaborationsAppHandler {
+    constructor(collaborationsAppService, playlistSongAppService, validator) {
+        this._collaborationsAppService = collaborationsAppService;
+        this._playlistSongAppService = playlistSongAppService;
         this._validator = validator;
 
-        this.postCollaborationHandler = this.postCollaborationHandler.bind(this);
-        this.deleteCollaborationHandler = this.deleteCollaborationHandler.bind(this);
+        this.postCollaborationAppHandler = this.postCollaborationAppHandler.bind(this);
+        this.deleteCollaborationAppHandler = this.deleteCollaborationAppHandler.bind(this);
     }
 
-    async postCollaborationHandler(request, h) {
+    async postCollaborationAppHandler(request, h) {
         try {
-            this._validator.validateCollaborationPayload(request.payload);
+            this._validator.validateCollaborationAppPayload(request.payload);
 
             const { id: credentialId } = request.auth.credentials;
             const { playlistId, userId } = request.payload;
 
-            await this._playlistSongService.verifyPlaylistSongOwner(playlistId, credentialId);
-            const collaborationId = await this._collaborationsService.addCollaboration(
+            await this._playlistSongAppService.verifyPlaylistSongAppOwner(
+                playlistId, 
+                credentialId,
+            );
+            const collaborationId = await this._collaborationsAppService.addCollaborationApp(
                 playlistId, userId,
             );
 
@@ -32,7 +35,7 @@ class CollaborationsHandler {
             response.code(201);
             return response;
         } catch (error) {
-            if (error instanceof ClientError) {
+            if (error instanceof ClientErrorApp) {
                 const response = h.response({
                     status: 'fail',
                     message: error.message,
@@ -43,7 +46,7 @@ class CollaborationsHandler {
             // Server ERROR!
             const response = h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
+                message: 'Maaf, terjadi ketidakberhasilan pada server kami.',
             });
             response.code(500);
             console.error(error);
@@ -51,21 +54,24 @@ class CollaborationsHandler {
         }
     }
 
-    async deleteCollaborationHandler(request, h) {
+    async deleteCollaborationAppHandler(request, h) {
         try {
-            this._validator.validateCollaborationPayload(request.payload);
+            this._validator.validateCollaborationAppPayload(request.payload);
             const { id: credentialId } = request.auth.credentials;
             const { playlistId, userId } = request.payload;
 
-            await this._playlistSongService.verifyPlaylistSongOwner(playlistId, credentialId);
-            await this._collaborationsService.deleteCollaboration(playlistId, userId);
+            await this._playlistSongAppService.verifyPlaylistSongAppOwner(
+                playlistId, 
+                credentialId,
+            );
+            await this._collaborationsAppService.deleteCollaborationApp(playlistId, userId);
     
             return {
                 status: 'success',
                 message: 'Kolaborasi berhasil dihapus',
             };
         } catch (error) {
-            if (error instanceof ClientError) {
+            if (error instanceof ClientErrorApp) {
                 const response = h.response({
                     status: 'fail',
                     message: error.message,
@@ -77,7 +83,7 @@ class CollaborationsHandler {
             // Server ERROR!
             const response = h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
+                message: 'Maaf, terjadi ketidakberhasilan pada server kami.',
             });
             response.code(500);
             console.error(error);
@@ -86,4 +92,4 @@ class CollaborationsHandler {
     }
 }
 
-module.exports = CollaborationsHandler;
+module.exports = CollaborationsAppHandler;

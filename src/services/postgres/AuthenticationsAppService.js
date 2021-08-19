@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
-const InvariantError = require('../../exceptions/InvariantError');
+const InvariantErrorApp = require('../../exceptions/InvariantErrorApp');
 
-class AuthenticationsService {
+class AuthenticationsAppService {
     constructor() {
         this._pool = new Pool();
     }
@@ -24,7 +24,7 @@ class AuthenticationsService {
         const result = await this._pool.query(query);
         
         if (!result.rowCount) {
-            throw new InvariantError('Refresh token tidak valid');
+            throw new InvariantErrorApp('Refresh token tidak valid');
         }
     }
 
@@ -40,4 +40,4 @@ class AuthenticationsService {
     }
 }
 
-module.exports = AuthenticationsService;
+module.exports = AuthenticationsAppService;

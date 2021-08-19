@@ -1,9 +1,9 @@
-class ClientError extends Error {
+class ClientErrorApp extends Error {
     constructor(message, statusCode = 400) {
         super(message);
         this.statusCode = statusCode;
-        this.name = 'ClientError';
+        this.name = 'ClientErrorApp';
     }
 }
 
-module.exports = ClientError;
+module.exports = ClientErrorApp;

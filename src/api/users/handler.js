@@ -1,21 +1,21 @@
-const ClientError = require('../../exceptions/ClientError');
+const ClientErrorApp = require('../../exceptions/ClientErrorApp');
 
-class UsersHandler {
-    constructor(service, validator) {
-        this._service = service;
+class UsersAppHandler {
+    constructor(usersAppService, validator) {
+        this._usersAppService = usersAppService;
         this._validator = validator;
         
-        this.postUserHandler = this.postUserHandler.bind(this);
-        this.getUserByIdHandler = this.getUserByIdHandler.bind(this);
-        this.getUsersByUsernameHandler = this.getUsersByUsernameHandler.bind(this);
+        this.postUserAppHandler = this.postUserAppHandler.bind(this);
+        this.getUserAppByIdHandler = this.getUserAppByIdHandler.bind(this);
+        this.getUsersAppByUsernameHandler = this.getUsersAppByUsernameHandler.bind(this);
     }
     
-    async postUserHandler(request, h) {
+    async postUserAppHandler(request, h) {
         try {
-            this._validator.validateUserPayload(request.payload);
+            this._validator.validateUserAppPayload(request.payload);
             const { username, password, fullname } = request.payload;
             
-            const userId = await this._service.addUser({ username, password, fullname });
+            const userId = await this._usersAppService.addUserApp({ username, password, fullname });
             
             const response = h.response({
                 status: 'success',
@@ -27,7 +27,7 @@ class UsersHandler {
             response.code(201);
             return response;
         } catch (error) {
-            if (error instanceof ClientError) {
+            if (error instanceof ClientErrorApp) {
                 const response = h.response({
                     status: 'fail',
                     message: error.message,
@@ -39,7 +39,7 @@ class UsersHandler {
             // Server ERROR!
             const response = h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
+                message: 'Maaf, terjadi ketidakberhasilan pada server kami.',
             });
             response.code(500);
             console.error(error);
@@ -47,10 +47,10 @@ class UsersHandler {
         }
     }
 
-    async getUserByIdHandler(request, h) {
+    async getUserAppByIdHandler(request, h) {
         try {
             const { id } = request.params;
-            const user = await this._service.getUserById(id);
+            const user = await this._usersAppService.getUserAppById(id);
             return {
                 status: 'success',
                 data: {
@@ -58,7 +58,7 @@ class UsersHandler {
                 },
             };
         } catch (error) {
-            if (error instanceof ClientError) {
+            if (error instanceof ClientErrorApp) {
                 const response = h.response({
                     status: 'fail',
                     message: error.message,
@@ -70,7 +70,7 @@ class UsersHandler {
             // Server ERROR!
             const response = h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
+                message: 'Maaf, terjadi ketidakberhasilan pada server kami.',
             });
             response.code(500);
             console.error(error);
@@ -78,10 +78,10 @@ class UsersHandler {
         }
     }
 
-    async getUsersByUsernameHandler(request, h) {
+    async getUsersAppByUsernameHandler(request, h) {
         try {
             const { username = '' } = request.query;
-            const users = await this._service.getUsersByUsername(username);
+            const users = await this._service.getUsersAppByUsername(username);
             return {
                 status: 'success',
                 data: {
@@ -89,7 +89,7 @@ class UsersHandler {
                 },
             };
         } catch (error) {
-            if (error instanceof ClientError) {
+            if (error instanceof ClientErrorApp) {
                 const response = h.response({
                     status: 'fail',
                     message: error.message,
@@ -101,7 +101,7 @@ class UsersHandler {
             // Server ERROR!
             const response = h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
+                message: 'Maaf, terjadi ketidakberhasilan pada server kami.',
             });
             response.code(500);
             console.error(error);
@@ -110,4 +110,4 @@ class UsersHandler {
     }
 }
 
-module.exports = UsersHandler;
+module.exports = UsersAppHandler;

@@ -1,17 +1,17 @@
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
-const InvariantError = require('../../exceptions/InvariantError');
-const NotFoundError = require('../../exceptions/NotFoundError');
-const AuthenticationError = require('../../exceptions/AuthenticationError');
+const InvariantErrorApp = require('../../exceptions/InvariantErrorApp');
+const NotFoundErrorApp = require('../../exceptions/NotFoundErrorApp');
+const AuthenticationErrorApp = require('../../exceptions/AuthenticationErrorApp');
 
-class UsersService {
+class UsersServiceApp {
     constructor() {
         this._pool = new Pool();
     }
 
-    async addUser({ username, password, fullname }) {
-        await this.verifyNewUsername(username);
+    async addUserApp({ username, password, fullname }) {
+        await this.verifyNewUsernameApp(username);
         const id = `user-${nanoid(16)}`;
         const hashedPassword = await bcrypt.hash(password, 10);
         const query = {
@@ -22,13 +22,13 @@ class UsersService {
         const result = await this._pool.query(query);
 
         if (!result.rowCount) {
-            throw new InvariantError('User gagal ditambahkan');
+            throw new InvariantErrorApp('User tidak berhasil ditambahkan');
         }
 
         return result.rows[0].id;
     }
 
-    async verifyNewUsername(username) {
+    async verifyNewUsernameApp(username) {
         const query = {
             text: 'SELECT username FROM users WHERE username = $1',
             values: [username],
@@ -36,12 +36,12 @@ class UsersService {
         
         const result = await this._pool.query(query);
 
-        if (result.rowCount > 0) {
-            throw new InvariantError('Gagal menambahkan user. Username sudah digunakan.');
+        if (result.rowCount) {
+            throw new InvariantErrorApp('Tidak berhasil menambahkan user. Username telah dipakai.');
         }
     }
 
-    async getUserById(userId) {
+    async getUserAppById(userId) {
         const query = {
             text: 'SELECT id, username, fullname FROM users WHERE id = $1',
             values: [userId],
@@ -50,13 +50,13 @@ class UsersService {
         const result = await this._pool.query(query);
 
         if (!result.rowCount) {
-            throw new NotFoundError('User tidak ditemukan');
+            throw new NotFoundErrorApp('User tidak berhasil ditemukan');
         }
 
         return result.rows[0];
     }
 
-    async verifyUserCredential(username, password) {
+    async verifyUserAppCredential(username, password) {
         const query = {
             text: 'SELECT id, password FROM users WHERE username = $1',
             values: [username],
@@ -65,7 +65,7 @@ class UsersService {
         const result = await this._pool.query(query);
         
         if (!result.rowCount) {
-            throw new AuthenticationError('Kredensial yang Anda berikan salah');
+            throw new AuthenticationErrorApp('Kredensial yang Anda berikan keliru');
         }
         
         const { id, password: hashedPassword } = result.rows[0];
@@ -73,13 +73,13 @@ class UsersService {
         const match = await bcrypt.compare(password, hashedPassword);
         
         if (!match) {
-            throw new AuthenticationError('Kredensial yang Anda berikan salah');
+            throw new AuthenticationErrorApp('Kredensial yang Anda berikan keliru');
         }
         
         return id;
     }
 
-    async getUsersByUsername(username) {
+    async getUsersAppByUsername(username) {
         const query = {
             text: 'SELECT id, username, fullname FROM users WHERE username LIKE $1',
             values: [`%${username}%`],
@@ -89,4 +89,4 @@ class UsersService {
     }
 }
 
-module.exports = UsersService;
+module.exports = UsersServiceApp;

@@ -1,14 +1,14 @@
-const InvariantError = require('../../exceptions/InvariantError');
-const { UserPayloadSchema } = require('./schema');
+const InvariantErrorApp = require('../../exceptions/InvariantErrorApp');
+const { UserAppPayloadSchema } = require('./schema');
 
-const UsersValidator = {
-    validateUserPayload: (payload) => {
-        const validationResult = UserPayloadSchema.validate(payload);
+const UsersAppValidator = {
+    validateUserAppPayload: (payload) => {
+        const validationAppResult = UserAppPayloadSchema.validate(payload);
         
-        if (validationResult.error) {
-            throw new InvariantError(validationResult.error.message);
+        if (validationAppResult.error) {
+            throw new InvariantErrorApp(validationAppResult.error.message);
         }
     },
 };
 
-module.exports = UsersValidator;
+module.exports = UsersAppValidator;

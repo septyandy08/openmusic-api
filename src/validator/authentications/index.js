@@ -1,29 +1,29 @@
 const {
-    PostAuthenticationPayloadSchema,
-    PutAuthenticationPayloadSchema,
-    DeleteAuthenticationPayloadSchema,
+    PostAuthenticationAppPayloadSchema,
+    PutAuthenticationAppPayloadSchema,
+    DeleteAuthenticationAppPayloadSchema,
 } = require('./schema');
-const InvariantError = require('../../exceptions/InvariantError');
+const InvariantErrorApp = require('../../exceptions/InvariantErrorApp');
 
-const AuthenticationsValidator = {
-    validatePostAuthenticationPayload: (payload) => {
-        const validationResult = PostAuthenticationPayloadSchema.validate(payload);
-        if (validationResult.error) {
-            throw new InvariantError(validationResult.error.message);
+const AuthenticationsAppValidator = {
+    validatePostAuthenticationAppPayload: (payload) => {
+        const validationAppResult = PostAuthenticationAppPayloadSchema.validate(payload);
+        if (validationAppResult.error) {
+            throw new InvariantErrorApp(validationAppResult.error.message);
         }
     },
-    validatePutAuthenticationPayload: (payload) => {
-        const validationResult = PutAuthenticationPayloadSchema.validate(payload);
-        if (validationResult.error) {
-            throw new InvariantError(validationResult.error.message);
+    validatePutAuthenticationAppPayload: (payload) => {
+        const validationAppResult = PutAuthenticationAppPayloadSchema.validate(payload);
+        if (validationAppResult.error) {
+            throw new InvariantErrorApp(validationAppResult.error.message);
         }
     },
-    validateDeleteAuthenticationPayload: (payload) => {
-        const validationResult = DeleteAuthenticationPayloadSchema.validate(payload);
-        if (validationResult.error) {
-            throw new InvariantError(validationResult.error.message);
+    validateDeleteAuthenticationAppPayload: (payload) => {
+        const validationAppResult = DeleteAuthenticationAppPayloadSchema.validate(payload);
+        if (validationAppResult.error) {
+            throw new InvariantErrorApp(validationAppResult.error.message);
         }
     },
 };
 
-module.exports = AuthenticationsValidator;
+module.exports = AuthenticationsAppValidator;

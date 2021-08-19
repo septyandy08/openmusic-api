@@ -1,13 +1,13 @@
 const { nanoid } = require('nanoid');
-const InvariantError = require('../../exceptions/InvariantError');
-const NotFoundError = require('../../exceptions/NotFoundError');
+const InvariantErrorApp = require('../../exceptions/InvariantErrorApp');
+const NotFoundErrorApp = require('../../exceptions/NotFoundErrorApp');
 
-class SongsService {
+class SongsAppService {
     constructor() {
         this._songs = [];
     }
     
-    addSong({ title, year, performer, genre, duration }) {
+    addSongApp({ title, year, performer, genre, duration }) {
         const id = nanoid(16);
         const insertedAt = new Date().toISOString();
         const updatedAt = insertedAt;
@@ -21,13 +21,13 @@ class SongsService {
         const isSuccess = this._songs.filter((song) => song.id === id).length > 0;
 
         if (!isSuccess) {
-            throw new InvariantError('Lagu gagal ditambahkan');
+            throw new InvariantErrorApp('Lagu tidak berhasil ditambahkan');
         }
 
         return id;
     }
 
-    getSongs() {
+    getSongsApp() {
         return this._songs.map((song) => ({
             id: song.id,
             title: song.title,
@@ -35,19 +35,19 @@ class SongsService {
         }));
     }
 
-    getSongById(id) {
+    getSongAppById(id) {
         const song = this._songs.filter((n) => n.id === id)[0];
         if (!song) {
-            throw new NotFoundError('Lagu tidak ditemukan');
+            throw new NotFoundErrorApp('Lagu tidak berhasil didapatkan');
         }
         return song; 
     }
 
-    editSongById(id, { title, performer, genre }) {
+    editSongAppById(id, { title, performer, genre }) {
         const index = this._songs.findIndex((song) => song.id === id);
         
         if (index === -1) {
-            throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan');
+            throw new NotFoundErrorApp('Tidak berhasil memperbarui lagu. ID tidak dapat ditemukan');
         }
 
         const updatedAt = new Date().toISOString();
@@ -65,15 +65,15 @@ class SongsService {
         };
     }
 
-    deleteSongById(id) {
+    deleteSongAppById(id) {
         const index = this._songs.findIndex((song) => song.id === id);
         
         if (index === -1) {
-            throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
+            throw new NotFoundErrorApp('Lagu tidak berhasil dihapus. ID tidak dapat ditemukan');
         }
         
         this._songs.splice(index, 1);
     }
 }
 
-module.exports = SongsService;
+module.exports = SongsAppService;

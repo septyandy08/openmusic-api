@@ -2,47 +2,68 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
+const path = require('path');
 
 // songs
 const songs = require('./api/songs');
-const SongsService = require('./services/postgres/SongsService');
-const SongsValidator = require('./validator/songs');
+const SongsAppService = require('./services/postgres/SongsAppService');
+const SongsAppValidator = require('./validator/songs');
 
 // users
 const users = require('./api/users');
-const UsersService = require('./services/postgres/UsersService');
-const UsersValidator = require('./validator/users');
+const UsersAppService = require('./services/postgres/UsersAppService');
+const UsersAppValidator = require('./validator/users');
 
 // authentications
 const authentications = require('./api/authentications');
-const AuthenticationsService = require('./services/postgres/AuthenticationsService');
+const AuthenticationsAppService = require('./services/postgres/AuthenticationsAppService');
+const AuthenticationsAppValidator = require('./validator/authentications');
 const TokenManager = require('./tokenize/TokenManager');
-const AuthenticationsValidator = require('./validator/authentications');
 
 // playlists
-const PlaylistsService = require('./services/postgres/PlaylistsService');
-const PlaylistsValidator = require('./validator/playlists');
 const playlists = require('./api/playlists');
+const PlaylistsAppService = require('./services/postgres/PlaylistsAppService');
+const PlaylistsAppValidator = require('./validator/playlists');
 
 // playlistsongs
-const PlaylistsSongService = require('./services/postgres/PlaylistSongService');
-const PlaylistSongValidator = require('./validator/playlistsongs');
 const playlistsong = require('./api/playlistsongs');
+const PlaylistSongAppService = require('./services/postgres/PlaylistSongAppService');
+const PlaylistSongAppValidator = require('./validator/playlistsongs');
 
 // collaborations
 const collaborations = require('./api/collaborations');
-const CollaborationsService = require('./services/postgres/CollaborationsService');
-const CollaborationsValidator = require('./validator/collaborations');
+const CollaborationsAppService = require('./services/postgres/CollaborationsAppService');
+const CollaborationsAppValidator = require('./validator/collaborations');
 
-const ClientError = require('./exceptions/ClientError');
+// exports
+const _exports = require('./api/exports');
+const ProducerAppService = require('./services/rabbitmq/ProducerAppService');
+const ExportsAppValidator = require('./validator/exports');
+
+// uploads
+const uploads = require('./api/uploads');
+const StorageAppService = require('./services/storage/StorageAppService');
+const UploadsAppValidator = require('./validator/uploads');
+
+// cache
+const CacheAppService = require('./services/redis/CacheAppService');
+
+// client error
+const ClientErrorApp = require('./exceptions/ClientErrorApp');
 
 const init = async () => {
-    const collaborationsService = new CollaborationsService();
-    const songsService = new SongsService();
-    const usersService = new UsersService();
-    const authenticationsService = new AuthenticationsService();
-    const playlistsService = new PlaylistsService();
-    const playlistSongService = new PlaylistsSongService(collaborationsService);
+    const cacheAppService = new CacheAppService();
+    const collaborationsAppService = new CollaborationsAppService(cacheAppService);
+    const songsAppService = new SongsAppService();
+    const usersAppService = new UsersAppService();
+    const authenticationsAppService = new AuthenticationsAppService();
+    const playlistsAppService = new PlaylistsAppService();
+    const playlistSongAppService = new PlaylistSongAppService(
+        collaborationsAppService, 
+        cacheAppService,
+    );
+    const storageAppService = new StorageAppService(path.resolve(__dirname, 'api/uploads/file/images'));
 
     const server = Hapi.server({
         port: process.env.PORT,
@@ -57,7 +78,7 @@ const init = async () => {
     server.ext('onPreResponse', (request, h) => {
         const { response } = request;
         
-        if (response instanceof ClientError) {
+        if (response instanceof ClientErrorApp) {
             const newResponse = h.response({
                 status: 'fail',
                 message: response.message,
@@ -75,10 +96,13 @@ const init = async () => {
         {
             plugin: Jwt,
         },
+        {
+            plugin: Inert,
+        },
     ]);
 
     // mendefinisikan strategy autentikasi jwt
-    server.auth.strategy('songsapp_jwt', 'jwt', {
+    server.auth.strategy('songsapp_jwt_final', 'jwt', {
         keys: process.env.ACCESS_TOKEN_KEY,
         verify: {
             aud: false,
@@ -99,46 +123,60 @@ const init = async () => {
         {
         plugin: songs,
         options: {
-            service: songsService,
-            validator: SongsValidator,
+            songsAppService,
+            validator: SongsAppValidator,
         },
     },
     {
         plugin: playlists,
         options: {
-            service: playlistsService,
-            validator: PlaylistsValidator,
+            playlistsAppService,
+            validator: PlaylistsAppValidator,
         },
     },
     {
         plugin: playlistsong,
         options: {
-            service: playlistSongService,
-            validator: PlaylistSongValidator,
+            playlistSongAppService,
+            validator: PlaylistSongAppValidator,
         },
     },
     {
         plugin: users,
         options: {
-            service: usersService,
-            validator: UsersValidator,
+            usersAppService,
+            validator: UsersAppValidator,
         },
     },
     {
         plugin: authentications,
         options: {
-            authenticationsService,
-            usersService,
+            authenticationsAppService,
+            usersAppService,
+            validator: AuthenticationsAppValidator,
             tokenManager: TokenManager,
-            validator: AuthenticationsValidator,
         },
     },
     {
         plugin: collaborations,
         options: {
-            collaborationsService,
-            playlistSongService,
-            validator: CollaborationsValidator,
+            collaborationsAppService,
+            playlistSongAppService,
+            validator: CollaborationsAppValidator,
+        },
+    },
+    {
+        plugin: _exports,
+        options: {
+            ProducerAppService,
+            validator: ExportsAppValidator,
+        },
+    },
+    {
+        plugin: uploads,
+        options: {
+            storageAppService,
+            validator: UploadsAppValidator,
         },
     },
 ]);

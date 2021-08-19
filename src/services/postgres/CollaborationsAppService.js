@@ -1,13 +1,13 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
-const InvariantError = require('../../exceptions/InvariantError');
+const InvariantErrorApp = require('../../exceptions/InvariantErrorApp');
 
-class CollaborationsService {
+class CollaborationsAppService {
     constructor() {
         this._pool = new Pool();
     }
 
-    async addCollaboration(playlistId, userId) {
+    async addCollaborationApp(playlistId, userId) {
 
         const id = `collab-${nanoid(16)}`;
 
@@ -19,12 +19,12 @@ class CollaborationsService {
         const result = await this._pool.query(query);
 
         if (!result.rowCount) {
-            throw new InvariantError('Kolaborasi gagal ditambahkan');
+            throw new InvariantErrorApp('Kolaborasi tidak berhasil ditambahkan');
         }
         return result.rows[0].id;
     }
 
-    async deleteCollaboration(playlistId, userId) {
+    async deleteCollaborationApp(playlistId, userId) {
         const query = {
             text: 'DELETE FROM collaborations WHERE playlist_id = $1 AND user_id = $2 RETURNING id',
             values: [playlistId, userId],
@@ -33,12 +33,12 @@ class CollaborationsService {
         const result = await this._pool.query(query);
 
         if (!result.rowCount) {
-            throw new InvariantError('Kolaborasi gagal dihapus');
+            throw new InvariantErrorApp('Kolaborasi tidak berhasil dihapus');
         }
 
     }
 
-    async verifyCollaborator(playlistId, userId) {
+    async verifyCollaboratorApp(playlistId, userId) {
         const query = {
             text: 'SELECT * FROM collaborations WHERE playlist_id = $1 AND user_id = $2',
             values: [playlistId, userId],
@@ -47,9 +47,9 @@ class CollaborationsService {
         const result = await this._pool.query(query);
 
         if (!result.rowCount) {
-            throw new InvariantError('Kolaborasi gagal diverifikasi');
+            throw new InvariantErrorApp('Kolaborasi tidak berhasil diverifikasi');
         }
     }
 }
 
-module.exports = CollaborationsService;
+module.exports = CollaborationsAppService;

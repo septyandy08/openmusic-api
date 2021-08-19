@@ -1,28 +1,28 @@
-const ClientError = require('../../exceptions/ClientError');
+const ClientErrorApp = require('../../exceptions/ClientErrorApp');
 
-class AuthenticationsHandler {
-    constructor(authenticationsService, usersService, tokenManager, validator) {
-        this._authenticationsService = authenticationsService;
-        this._usersService = usersService;
+class AuthenticationsAppHandler {
+    constructor(authenticationsAppService, usersAppService, tokenManager, validator) {
+        this._authenticationsAppService = authenticationsAppService;
+        this._usersAppService = usersAppService;
         this._tokenManager = tokenManager;
         this._validator = validator;
 
-        this.postAuthenticationHandler = this.postAuthenticationHandler.bind(this);
-        this.putAuthenticationHandler = this.putAuthenticationHandler.bind(this);
-        this.deleteAuthenticationHandler = this.deleteAuthenticationHandler.bind(this);
+        this.postAuthenticationAppHandler = this.postAuthenticationAppHandler.bind(this);
+        this.putAuthenticationAppHandler = this.putAuthenticationAppHandler.bind(this);
+        this.deleteAuthenticationAppHandler = this.deleteAuthenticationAppHandler.bind(this);
     }
     
-    async postAuthenticationHandler(request, h) {
+    async postAuthenticationAppHandler({ payload }, h) {
         try {
-            this._validator.validatePostAuthenticationPayload(request.payload);
+            this._validator.validatePostAuthenticationAppPayload(payload);
             
-            const { username, password } = request.payload;
-            const id = await this._usersService.verifyUserCredential(username, password);
+            const { username, password } = payload;
+            const id = await this._usersAppService.verifyUserAppCredential(username, password);
             
             const accessToken = this._tokenManager.generateAccessToken({ id });
             const refreshToken = this._tokenManager.generateRefreshToken({ id });
 
-            await this._authenticationsService.addRefreshToken(refreshToken);
+            await this._authenticationsAppService.addRefreshToken(refreshToken);
 
             const response = h.response({
                 status: 'success',
@@ -35,7 +35,7 @@ class AuthenticationsHandler {
             response.code(201);
             return response;
         } catch (error) {
-            if (error instanceof ClientError) {
+            if (error instanceof ClientErrorApp) {
                 const response = h.response({
                     status: 'fail',
                     message: error.message,
@@ -47,7 +47,7 @@ class AuthenticationsHandler {
             // Server ERROR!
             const response = h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
+                message: 'Maaf, terjadi ketidakberhasilan pada server kami.',
             });
             response.code(500);
             console.error(error);
@@ -55,24 +55,24 @@ class AuthenticationsHandler {
         }
     }
     
-    async putAuthenticationHandler(request, h) {
+    async putAuthenticationAppHandler(request, h) {
         try {
-            this._validator.validatePutAuthenticationPayload(request.payload);
+            this._validator.validatePutAuthenticationAppPayload(request.payload);
             
             const { refreshToken } = request.payload;
-            await this._authenticationsService.verifyRefreshToken(refreshToken);
+            await this._authenticationsAppService.verifyRefreshToken(refreshToken);
             const { id } = this._tokenManager.verifyRefreshToken(refreshToken);
 
             const accessToken = this._tokenManager.generateAccessToken({ id });
             return {
                 status: 'success',
-                message: 'Access Token berhasil diperbarui',
+                message: 'Access Token berhasil diupdate',
                 data: {
                     accessToken,
                 },
             };
         } catch (error) {
-            if (error instanceof ClientError) {
+            if (error instanceof ClientErrorApp) {
                 const response = h.response({
                     status: 'fail',
                     message: error.message,
@@ -84,7 +84,7 @@ class AuthenticationsHandler {
             // Server ERROR!
             const response = h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
+                message: 'Maaf, terjadi ketidakberhasilan pada server kami.',
             });
             response.code(500);
             console.error(error);
@@ -92,20 +92,20 @@ class AuthenticationsHandler {
         }
     }
 
-    async deleteAuthenticationHandler(request, h) {
+    async deleteAuthenticationAppHandler(request, h) {
         try {
-            this._validator.validateDeleteAuthenticationPayload(request.payload);
+            this._validator.validateDeleteAuthenticationAppPayload(request.payload);
 
             const { refreshToken } = request.payload;
-            await this._authenticationsService.verifyRefreshToken(refreshToken);
-            await this._authenticationsService.deleteRefreshToken(refreshToken);
+            await this._authenticationsAppService.verifyRefreshToken(refreshToken);
+            await this._authenticationsAppService.deleteRefreshToken(refreshToken);
     
             return {
                 status: 'success',
                 message: 'Refresh token berhasil dihapus',
             };
         } catch (error) {
-            if (error instanceof ClientError) {
+            if (error instanceof ClientErrorApp) {
                 const response = h.response({
                     status: 'fail',
                     message: error.message,
@@ -117,7 +117,7 @@ class AuthenticationsHandler {
             // Server ERROR!
             const response = h.response({
                 status: 'error',
-                message: 'Maaf, terjadi kegagalan pada server kami.',
+                message: 'Maaf, terjadi ketidakberhasilan pada server kami.',
             });
             response.code(500);
             console.error(error);
@@ -126,4 +126,4 @@ class AuthenticationsHandler {
     }
 }
 
-module.exports = AuthenticationsHandler;
+module.exports = AuthenticationsAppHandler;

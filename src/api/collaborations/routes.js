@@ -2,17 +2,17 @@ const routes = (handler) => [
     {
         method: 'POST',
         path: '/collaborations',
-        handler: handler.postCollaborationHandler,
+        handler: handler.postCollaborationAppHandler,
         options: {
-            auth: 'songsapp_jwt',
+            auth: 'songsapp_jwt_final',
         },
     },
     {
         method: 'DELETE',
         path: '/collaborations',
-        handler: handler.deleteCollaborationHandler,
+        handler: handler.deleteCollaborationAppHandler,
         options: {
-            auth: 'songsapp_jwt',
+            auth: 'songsapp_jwt_final',
         },
     },
 ];

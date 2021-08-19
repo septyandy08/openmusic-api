@@ -1,16 +1,16 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
-const InvariantError = require('../../exceptions/InvariantError');
+const InvariantErrorApp = require('../../exceptions/InvariantErrorApp');
 const { mapDBToModel } = require('../../utils');
-const NotFoundError = require('../../exceptions/NotFoundError');
-const AuthorizationError = require('../../exceptions/AuthorizationError');
+const NotFoundErrorApp = require('../../exceptions/NotFoundErrorApp');
+const AuthorizationErrorApp = require('../../exceptions/AuthorizationErrorApp');
 
-class PlaylistsService {
+class PlaylistsAppService {
     constructor() {
         this._pool = new Pool();
     }
 
-    async addPlaylist({ 
+    async addPlaylistApp({ 
         name, owner,
     }) {
         const id = `playlist-${nanoid(16)}`;
@@ -25,13 +25,13 @@ class PlaylistsService {
         const result = await this._pool.query(query);
 
         if (!result.rows[0].id) {
-            throw new InvariantError('Playlist gagal ditambahkan');
+            throw new InvariantErrorApp('Playlist tidak berhasil ditambahkan');
         }
 
         return result.rows[0].id;
     }
 
-    async verifyNewPlaylists(name, owner) {
+    async verifyNewPlaylistsApp(name, owner) {
         const query = {
             text: 'SELECT name FROM playlists WHERE name = $1 and owner = $2',
             values: [name, owner],
@@ -39,12 +39,12 @@ class PlaylistsService {
 
         const result = await this._pool.query(query);
 
-        if (result.rowCount > 0) {
-            throw new InvariantError('Gagal menambahkan playlists. nama playlists sudah digunakan.');
+        if (result.rowCount) {
+            throw new InvariantErrorApp('Tidak berhasil menambahkan playlists. Nama playlists sudah dipakai.');
         }
     }
 
-    async getPlaylists(owner) {
+    async getPlaylistsApp(owner) {
         const query = {
             text: `SELECT playlists.id, playlists.name, users.username FROM playlists
             left JOIN collaborations ON collaborations.playlist_id = playlists.id
@@ -59,7 +59,7 @@ class PlaylistsService {
         return result.rows.map(mapDBToModel);
     }
 
-    async deletePlaylistById(id) {
+    async deletePlaylistAppById(id) {
         const query = {
             text: 'DELETE FROM playlists WHERE id = $1 RETURNING id',
             values: [id],
@@ -68,11 +68,11 @@ class PlaylistsService {
         const result = await this._pool.query(query);
 
         if (!result.rowCount) {
-            throw new NotFoundError('Playlists gagal dihapus. Id tidak ditemukan');
+            throw new NotFoundErrorApp('Playlists tidak berhasil dihapus. ID tidak dapat ditemukan');
         }
     }
 
-    async verifyPlaylistOwner(id, owner) {
+    async verifyPlaylistAppOwner(id, owner) {
         const query = {
             text: 'SELECT * FROM playlists WHERE id = $1',
             values: [id],
@@ -81,14 +81,14 @@ class PlaylistsService {
         const result = await this._pool.query(query);
 
         if (!result.rowCount) {
-            throw new NotFoundError('Playlists tidak ditemukan');
+            throw new NotFoundErrorApp('Playlists tidak dapat ditemukan');
         }
         const playlist = result.rows[0];
 
         if (playlist.owner !== owner) {
-            throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+            throw new AuthorizationErrorApp('Anda tidak mempunyai hak akses ke dalam resource ini');
         }
     }
 }
 
-module.exports = PlaylistsService;
+module.exports = PlaylistsAppService;
